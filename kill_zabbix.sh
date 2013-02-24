@@ -1,0 +1,1 @@
+killall zabbix_server zabbix_agentd
