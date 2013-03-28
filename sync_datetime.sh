@@ -1,12 +1,26 @@
-#!/bin/sh
+#!/bin/bash
+
+. /root/bash/debug.sh
 
 PATH+=":/usr/sbin/"
 
-[ "$UID" -ne 0 ] && { echo "$0 must be run at root" ; exit 1; }
+[ "$UID" -ne 0 ] && { log_err "$0 must be run at root" ; exit 1; }
 
 syn_dt()
 {
-	ntpdate 210.72.145.44 && hwclock -w
+	if [[ -f /etc/ntp.conf ]]; then
+		for srv in `awk '/^server/{print $2}' /etc/ntp.conf`; do
+			ntpdate $srv > /dev/null && break
+		done
+	fi
+
+	local ret=$?
+
+	if [[ $ret -eq 0 ]]; then
+		hwclock -w
+	fi
+
+	return $ret
 }
 
 find_and_unset_proxy()
